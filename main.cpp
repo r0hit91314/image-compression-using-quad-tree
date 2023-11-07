@@ -1,104 +1,128 @@
 #include <iostream>
+#include <vector>
 #include <opencv2/opencv.hpp>
 
-using namespace std;
 using namespace cv;
+using namespace std;
 
-// Define a structure to represent nodes in a Quadtree
+// Node structure for the quad tree
 struct QuadTreeNode {
-    int color; // Grayscale color value for the node
-    bool isLeaf; // Indicates whether the node is a leaf or not
-    QuadTreeNode* children[4]; // Pointers to child nodes
+    uchar value;  // Grayscale value of the node
+    bool isLeaf; // Is this node a leaf node?
+    QuadTreeNode* children[4]; // Four children for the quad tree
 
-    // Constructor to initialize the node with a color value
-    QuadTreeNode(int c) : color(c), isLeaf(true) {
+    QuadTreeNode() {
+        value = 0;
+        isLeaf = false;
         for (int i = 0; i < 4; i++) {
             children[i] = nullptr;
         }
     }
 };
 
-// Function to insert a pixel into the Quadtree
-void insertPixel(QuadTreeNode* node, Mat& image, int x, int y, int size) {
-    if (size == 1) {
-        // If the size is 1x1, store the color value and mark the node as a leaf
-        node->color = image.at<uchar>(y, x);
-        node->isLeaf = true;
-        return;
+// Function to create a quad tree for the image
+QuadTreeNode* buildQuadTree(const Mat& image, int x, int y, int width, int height, uchar threshold) {
+    QuadTreeNode* node = new QuadTreeNode();
+    int sum = 0;
+
+    for (int i = x; i < x + width; i++) {
+        for (int j = y; j < y + height; j++) {
+            sum += image.at<uchar>(j, i);
+        }
     }
 
-    // If the node represents a larger area, it's not a leaf
-    node->isLeaf = false;
-    int halfSize = size / 2;
+    node->value = sum / (width * height);
 
-    for (int i = 0; i < 4; i++) {
-        // Calculate the coordinates of the four child nodes
-        int newX = x + (i % 2) * halfSize;
-        int newY = y + (i / 2) * halfSize;
+    if (width == 1 && height == 1) {
+        node->isLeaf = true;
+        return node;
+    }
 
-        if (node->children[i] == nullptr) {
-            // If the child node doesn't exist, create it
-            node->children[i] = new QuadTreeNode(0);
+    if (width > 1 && height > 1) {
+        bool homogeneous = true;
+        for (int i = x; i < x + width; i++) {
+            for (int j = y; j < y + height; j++) {
+                if (abs(image.at<uchar>(j, i) - node->value) > threshold) {
+                    homogeneous = false;
+                    break;
+                }
+            }
         }
 
-        // Recursively insert the pixel into the child node
-        insertPixel(node->children[i], image, newX, newY, halfSize);
+        if (homogeneous) {
+            node->isLeaf = true;
+            return node;
+        }
+    }
+
+    int halfWidth = width / 2;
+    int halfHeight = height / 2;
+
+    node->children[0] = buildQuadTree(image, x, y, halfWidth, halfHeight, threshold);
+    node->children[1] = buildQuadTree(image, x + halfWidth, y, halfWidth, halfHeight, threshold);
+    node->children[2] = buildQuadTree(image, x, y + halfHeight, halfWidth, halfHeight, threshold);
+    node->children[3] = buildQuadTree(image, x + halfWidth, y + halfHeight, halfWidth, halfHeight, threshold);
+
+    return node;
+}
+
+// Function to destroy the quad tree
+void destroyQuadTree(QuadTreeNode* node) {
+    if (node != nullptr) {
+        for (int i = 0; i < 4; i++) {
+            destroyQuadTree(node->children[i]);
+        }
+        delete node;
     }
 }
 
-// Function to compress the image using the Quadtree
-void compressImage(QuadTreeNode* root, Mat& compressedImage, int x, int y, int size) {
-    if (root->isLeaf) {
-        // If the node is a leaf, set the color of the corresponding pixels in the compressed image
-        for (int i = y; i < y + size; i++) {
-            for (int j = x; j < x + size; j++) {
-                compressedImage.at<uchar>(i, j) = static_cast<uchar>(root->color);
+// Function to compress the image using the quad tree
+void compressImage(QuadTreeNode* node, Mat& compressedImage) {
+    if (node->isLeaf) {
+        for (int i = 0; i < compressedImage.cols; i++) {
+            for (int j = 0; j < compressedImage.rows; j++) {
+                compressedImage.at<uchar>(j, i) = node->value;
             }
         }
     } else {
-        int halfSize = size / 2;
+        int halfWidth = compressedImage.cols / 2;
+        int halfHeight = compressedImage.rows / 2;
 
-        for (int i = 0; i < 4; i++) {
-            // Calculate the coordinates of the four child nodes
-            int newX = x + (i % 2) * halfSize;
-            int newY = y + (i / 2) * halfSize;
-
-            // Recursively compress the child node
-            compressImage(root->children[i], compressedImage, newX, newY, halfSize);
-        }
+        compressImage(node->children[0], compressedImage(Rect(0, 0, halfWidth, halfHeight)));
+        compressImage(node->children[1], compressedImage(Rect(halfWidth, 0, halfWidth, halfHeight)));
+        compressImage(node->children[2], compressedImage(Rect(0, halfHeight, halfWidth, halfHeight)));
+        compressImage(node->children[3], compressedImage(Rect(halfWidth, halfHeight, halfWidth, halfHeight)));
     }
 }
 
 int main() {
-    // Load the input image
-    Mat image = imread("input.jpg", IMREAD_GRAYSCALE);
-
+    // Load the grayscale image
+    Mat image = imread("input_image.jpg", IMREAD_GRAYSCALE);
+    
     if (image.empty()) {
-        cerr << "Failed to open the image!" << endl;
+        cerr << "Error: Unable to load image." << endl;
         return -1;
     }
 
-    int width = image.cols;
-    int height = image.rows;
+    // Set the threshold for compression
+    uchar threshold = 10;
 
-    // Create a blank image for the compressed result
-    Mat compressedImage(height, width, CV_8UC1, Scalar(0));
+    // Build the quad tree
+    QuadTreeNode* root = buildQuadTree(image, 0, 0, image.cols, image.rows, threshold);
 
-    // Create the root of the Quadtree
-    QuadTreeNode* root = new QuadTreeNode(0);
+    // Create a compressed image
+    Mat compressedImage = Mat::zeros(image.size(), CV_8U);
 
-    // Insert each pixel into the Quadtree
-    for (int y = 0; y < height; y++) {
-        for (int x = 0; x < width; x++) {
-            insertPixel(root, image, x, y, width);
-        }
-    }
-
-    // Compress the image using the Quadtree
-    compressImage(root, compressedImage, 0, 0, width);
+    // Compress the image using the quad tree
+    compressImage(root, compressedImage);
 
     // Save the compressed image
-    imwrite("compressed.jpg", compressedImage);
+    imwrite("compressed_image.jpg", compressedImage);
+
+    // Destroy the quad tree
+    destroyQuadTree(root);
+
+    cout << "Image compression complete." << endl;
 
     return 0;
 }
