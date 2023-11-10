@@ -7,11 +7,8 @@ Our project on focuses on 'Image Compression using quad trees'. It is a method t
 Or follow the below instructions<br>
 To download our program, please copy and paste this line to your terminal:
 ```
-git clone https://github.com/aggarwal-aditya/Quad-Trees-Image-Compression-CS201-Project.git
-```
-Then type
-```
-cd CS201-Project
+git clone https://github.com/r0hit91314/image-compression-using-quad-tree.git```
+
 ```
 ### First you will Simulate Image Compression Quad Tree:
 To simulate image compression, type ``` cd img_proc ``` in your terminal. 
