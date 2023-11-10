@@ -4,7 +4,7 @@ Our project on focuses on 'Image Compression using quad trees'. It is a method t
 
 
 # How to use our program?
-Or follow the below instructions<br>
+Follow the below instructions<br>
 To download our program, please copy and paste this line to your terminal:
 ```
 git clone https://github.com/r0hit91314/image-compression-using-quad-tree.git```
