@@ -10,9 +10,7 @@ To download our program, please copy and paste this line to your terminal:
 git clone https://github.com/r0hit91314/image-compression-using-quad-tree.git```
 
 ```
-### First you will Simulate Image Compression Quad Tree:
-To simulate image compression, type ``` cd img_proc ``` in your terminal. 
----
+
 
 ### Further Steps to run Image Compression
 It is expected that your system has OpenCV library installed (it has been  used for reading and writing images as we cant do this directly in C/C++). If not steps for the same are given below.
