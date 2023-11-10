@@ -1,5 +1,5 @@
 # Image Compression using Quadtree
-Our project on focuses on 'Image Compression using quad trees'. It is a method to reduce the file size of an image while maintaining its quality. It does this by dividing the image into smaller regions and representing these regions using a hierarchical data structure called a quadtree. Regions that are uniform or have similar pixel values are compressed, resulting in a smaller file size. This technique is used in applications where preserving image quality is essential, such as in medical imaging or satellite imagery.
+Our project focuses on method to reduce the file size of an image while maintaining its quality. It does this by dividing the image into smaller regions and representing these regions using a hierarchical data structure called a quadtree. Regions that are uniform or have similar pixel values are compressed, resulting in a smaller file size. This technique is used in applications where preserving image quality is essential, such as in medical imaging or satellite imagery.
 
 
 
