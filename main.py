@@ -68,8 +68,14 @@ def main():
         print("Error: Unable to load image.")
         return
     
-    # Set the threshold for compression
-    threshold = 3  # Adjust this threshold for better compression
+    # User chooses the threshold for compression
+    print("Input Threshold")
+    print("Choose greater than 5 for good compression")
+    print("Choose 5 for better compression")
+    print("Choose lesser than 5 for best compression")
+    print("More the value of threshold, lesser will be the runtime")
+    
+    threshold = int(input("Threshold : "))
     
     # Build the quad tree
     root = buildQuadTree(image, 0, 0, image.shape[1], image.shape[0], threshold)
