@@ -4,24 +4,24 @@ import cv2
 # Node structure for the quad tree
 class QuadTreeNode:
     def __init__(self):
-        self.value = 0  # Grayscale value of the node
+        self.value = [0, 0, 0]  # RGB value of the node
         self.isLeaf = False  # Is this node a leaf node?
         self.children = [None] * 4  # Four children for the quad tree
 
 # Function to create a quad tree for the image
 def buildQuadTree(image, x, y, width, height, threshold):
     node = QuadTreeNode()
-    sum_pixels = np.sum(image[y:y + height, x:x + width])
+    sum_pixels = np.sum(image[y:y + height, x:x + width], axis=(0, 1))
 
     if width == 1 and height == 1:
-        node.value = image[y, x]
+        node.value = image[y, x].tolist()
         node.isLeaf = True
         return node
 
     if width > 0 and height > 0:
-        node.value = sum_pixels // (width * height)
+        node.value = (sum_pixels // (width * height)).tolist()
     else:
-        node.value = 0  # Handle edge case where width or height is zero
+        node.value = [0, 0, 0]  # Handle edge case where width or height is zero
 
     if width > 1 and height > 1:
         homogeneous = np.all(np.abs(image[y:y + height, x:x + width] - node.value) <= threshold)
@@ -50,7 +50,7 @@ def destroyQuadTree(node):
 # Function to compress the image using the quad tree
 def compressImage(node, compressedImage):
     if node.isLeaf:
-        compressedImage[:] = node.value
+        compressedImage[:, :] = node.value
     else:
         halfWidth = compressedImage.shape[1] // 2
         halfHeight = compressedImage.shape[0] // 2
@@ -61,8 +61,8 @@ def compressImage(node, compressedImage):
         compressImage(node.children[3], compressedImage[halfHeight:, halfWidth:])
 
 def main():
-    # Load the grayscale image
-    image = cv2.imread("input.png", cv2.IMREAD_GRAYSCALE)
+    # Load the color image
+    image = cv2.imread("input.jpg")
     
     if image is None:
         print("Error: Unable to load image.")
@@ -75,7 +75,11 @@ def main():
     print("Choose lesser than 5 for best compression")
     print("More the value of threshold, lesser will be the runtime")
     
-    threshold = int(input("Threshold : "))
+    try:
+        threshold = int(input("Threshold: "))
+    except ValueError:
+        print("Invalid input. Please enter an integer value.")
+        return
     
     # Build the quad tree
     root = buildQuadTree(image, 0, 0, image.shape[1], image.shape[0], threshold)
@@ -86,8 +90,8 @@ def main():
     # Compress the image using the quad tree
     compressImage(root, compressedImage)
     
-    # Save the compressed image 
-    cv2.imwrite("modified.jpg", compressedImage)
+    # Save the compressed image with lower quality
+    cv2.imwrite("compressed_image.jpg", compressedImage, [cv2.IMWRITE_JPEG_QUALITY, 50])
     
     # Destroy the quad tree
     destroyQuadTree(root)
