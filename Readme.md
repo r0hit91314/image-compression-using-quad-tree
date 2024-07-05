@@ -27,7 +27,7 @@ g++ main.cpp image.cpp image.hpp -o test -std=c++11 `pkg-config --cflags --libs 
 ```
 This will generate an output file ***test.exe***. To run this file type ```./test```  or ```./test.exe``` in your terminal.
 ### Further Common Steps for any OS
-After this the programme will ask you the path of image which is to compressed. After you enter the required path, it will ask you if you want to proceed with default setting for image variance(a measure for image compression) or want to change it. After providing the required inputs the programme will display the original and compressed file. The compressed file will also be saved with a name ***modified.jpeg*** in the directory where code is present. 
+After this the programme will ask you the path of image which is to compressed. After you enter the required path, it will ask you if you want to proceed with default setting for image variance(a measure for image compression) or want to change it. After providing the required inputs the programme will display the original and compressed file. The compressed file will also be saved with a name ***compressed_image.jpeg*** in the directory where code is present. 
 
 ---
 ### Demonstration
@@ -38,8 +38,8 @@ Here is the demonstration of the images before and after the compression:
    ![Original Image](input.jpg)
 
 
-4. **Compressed Image (Size 1.98 MB)**
-   ![Compressed Image](modified.jpg)
+4. **Compressed Image (Size 670 KB)**
+   ![Compressed Image](compressed_image.jpg)
 
 ---
 
